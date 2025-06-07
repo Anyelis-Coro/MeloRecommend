@@ -1,4 +1,4 @@
-------Sistema de Recomendación Musical - Backend--------
+------Sistema de Recomendación Musical --------
 El backend está construido con Python 2.7, Cassandra 3.11.10 y JDK 8 para impulsar el sistema de recomendación musical.
 
 ---Requisitos Previos----
