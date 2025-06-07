@@ -10,26 +10,26 @@ import json
 import os
 import logging
 
-# Configure logging
+# Configurar el sistema de logs
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)  # Habilitar CORS para todas las rutas
 
-# Secret key for JWT
-SECRET_KEY = "your-secret-key"  # In production, use an environment variable
+# Clave secreta para JWT
+SECRET_KEY = "your-secret-key"  # En producción, usar una variable de entorno
 
-# Connect to Cassandra
+# Conectar a Cassandra
 try:
-    # Update these parameters based on your Cassandra setup
+    # Actualizar estos parámetros según tu configuración de Cassandra
     cluster = Cluster(['127.0.0.1'])
     session = cluster.connect('music_recommendation')
     logger.info("Connected to Cassandra successfully")
 except Exception as e:
     logger.error("Could not connect to Cassandra: %s", str(e))
 
-# JWT token required decorator
+# Decorador para requerir token JWT
 def token_required(f):
     def decorated(*args, **kwargs):
         token = None
@@ -43,7 +43,7 @@ def token_required(f):
             
         try:
             data = jwt.decode(token, SECRET_KEY)
-            # Get user from Cassandra
+            # Obtener usuario desde Cassandra
             user_rows = session.execute("SELECT * FROM users WHERE id = %s", [data['user_id']])
             current_user = user_rows.one()
             if not current_user:
@@ -55,24 +55,24 @@ def token_required(f):
     
     return decorated
 
-# Routes
+# Rutas
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
     
     username = data.get('username')
     email = data.get('email')
-    password = data.get('password')  # In production, hash this password
+    password = data.get('password')  # En producción, hashear esta contraseña
     
     if not username or not email or not password:
         return jsonify({'message': 'Missing required fields!'}), 400
     
-    # Check if user already exists
+    # Verificar si el usuario ya existe
     existing_user = session.execute("SELECT * FROM users WHERE email = %s ALLOW FILTERING", [email]).one()
     if existing_user:
         return jsonify({'message': 'User already exists!'}), 409
     
-    # Create user in Cassandra
+    # Crear usuario en Cassandra
     try:
         import uuid
         user_id = str(uuid.uuid4())
@@ -81,10 +81,10 @@ def register():
             INSERT INTO users (id, username, email, password)
             VALUES (%s, %s, %s, %s)
             """,
-            (user_id, username, email, password)  # In production, hash the password
+            (user_id, username, email, password)  # En producción, hashear la contraseña
         )
         
-        # Create token
+        # Crear token
         token = jwt.encode({
             'user_id': user_id,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30)
@@ -113,14 +113,14 @@ def login():
     if not email or not password:
         return jsonify({'message': 'Missing email or password!'}), 400
     
-    # Verify user credentials
+    # Verificar credenciales del usuario
     user_rows = session.execute("SELECT * FROM users WHERE email = %s ALLOW FILTERING", [email])
     user = user_rows.one()
     
-    if not user or user.password != password:  # In production, verify hashed password
+    if not user or user.password != password:  # En producción, verificar contraseña hasheada
         return jsonify({'message': 'Invalid credentials!'}), 401
     
-    # Create token
+    # Crear token
     token = jwt.encode({
         'user_id': user.id,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30)
@@ -138,7 +138,7 @@ def login():
 @app.route('/api/popular_songs', methods=['GET'])
 def get_popular_songs():
     try:
-        # Query the most popular songs from Cassandra
+        # Consultar las canciones más populares desde Cassandra
         rows = session.execute("SELECT * FROM songs ORDER BY popularity DESC LIMIT 10")
         songs = []
         
@@ -161,7 +161,7 @@ def get_popular_songs():
 @token_required
 def get_recommendations(current_user):
     try:
-        # Get user preferences from Cassandra
+        # Obtener preferencias del usuario desde Cassandra
         preference_rows = session.execute(
             "SELECT genre FROM user_preferences WHERE user_id = %s", 
             [current_user.id]
@@ -169,7 +169,7 @@ def get_recommendations(current_user):
         
         genres = [row.genre for row in preference_rows]
         
-        # Get song recommendations based on user preferences
+        # Obtener recomendaciones de canciones basadas en preferencias del usuario
         songs = []
         
         if genres:
@@ -187,7 +187,7 @@ def get_recommendations(current_user):
                     'duration': row.duration
                 })
         else:
-            # If no preferences, return popular songs
+            # Si no hay preferencias, devolver canciones populares
             rows = session.execute("SELECT * FROM songs ORDER BY popularity DESC LIMIT 10")
             
             for row in rows:
@@ -210,7 +210,7 @@ def get_recommendations(current_user):
 def user_preferences(current_user):
     if request.method == 'GET':
         try:
-            # Get user preferences from Cassandra
+            # Obtener preferencias del usuario desde Cassandra
             preference_rows = session.execute(
                 "SELECT genre FROM user_preferences WHERE user_id = %s", 
                 [current_user.id]
@@ -227,13 +227,13 @@ def user_preferences(current_user):
         genres = data.get('genres', [])
         
         try:
-            # Delete existing preferences
+            # Eliminar preferencias existentes
             session.execute(
                 "DELETE FROM user_preferences WHERE user_id = %s", 
                 [current_user.id]
             )
             
-            # Insert new preferences
+            # Insertar nuevas preferencias
             for genre in genres:
                 session.execute(
                     "INSERT INTO user_preferences (user_id, genre) VALUES (%s, %s)",
@@ -253,8 +253,7 @@ def search():
         return jsonify({'message': 'Search query is required!'}), 400
     
     try:
-        # Search for songs in Cassandra (basic implementation)
-        # In a real system, you might want to use a search engine like Elasticsearch
+        # Buscar canciones en Cassandra (implementación básica)
         rows = session.execute(
             "SELECT * FROM songs WHERE title LIKE %s OR artist LIKE %s OR album LIKE %s ALLOW FILTERING",
             ['%' + query + '%', '%' + query + '%', '%' + query + '%']
@@ -319,7 +318,7 @@ def favorites(current_user):
             return jsonify({'message': 'Song ID is required!'}), 400
         
         try:
-            # Add song to favorites
+            # Agregar canciones favoritas
             session.execute(
                 "INSERT INTO favorites (user_id, song_id) VALUES (%s, %s)",
                 (current_user.id, song_id)
@@ -338,7 +337,7 @@ def favorites(current_user):
             return jsonify({'message': 'Song ID is required!'}), 400
         
         try:
-            # Remove song from favorites
+            # Eliminar canciones de favoritas
             session.execute(
                 "DELETE FROM favorites WHERE user_id = %s AND song_id = %s",
                 (current_user.id, song_id)
