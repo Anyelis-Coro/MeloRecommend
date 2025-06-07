@@ -1,4 +1,5 @@
-------Sistema de Recomendación Musical --------
+#Sistema de Recomendación Musical
+
 El backend está construido con Python 2.7, Cassandra 3.11.10 y JDK 8 para impulsar el sistema de recomendación musical.
 
 ---Requisitos Previos----
@@ -42,14 +43,14 @@ DELETE /api/favorites - Eliminar canción de favoritos (requiere autenticación)
 
 El esquema de Cassandra incluye las siguiente tablas
 
-# users - Información de usuarios
+users - Información de usuarios
 
-# songs - Metadatos de canciones
+songs - Metadatos de canciones
 
-# user_preferences - Preferencias de géneros del usuario
+user_preferences - Preferencias de géneros del usuario
 
-# favorites - Canciones favoritas del usuario
+favorites - Canciones favoritas del usuario
 
-# listening_history - Historial de escucha del usuario
+listening_history - Historial de escucha del usuario
 
-# playlists - Listas de reproducción del usuario
+playlists - Listas de reproducción del usuario
