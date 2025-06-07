@@ -1,83 +1,80 @@
--- Cassandra Schema for Music Recommendation System
-
--- Create keyspace
+-- Creación del keyspace (espacio de claves)
 CREATE KEYSPACE IF NOT EXISTS music_recommendation
 WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };
 
 USE music_recommendation;
 
--- Users table
+-- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS users (
-    id uuid PRIMARY KEY,
-    username text,
-    email text,
-    password text, -- In production, store hashed passwords
-    created_at timestamp DEFAULT toTimestamp(now())
+id uuid PRIMARY KEY,
+username text,
+email text,
+password text, -- En producción, almacenar contraseñas cifradas
+created_at timestamp DEFAULT toTimestamp(now())
 );
 
--- Create index on email for login queries
+-- Índice para búsquedas por email (inicios de sesión)
 CREATE INDEX IF NOT EXISTS ON users (email);
 
--- Songs table
+-- Tabla de canciones
 CREATE TABLE IF NOT EXISTS songs (
-    id uuid PRIMARY KEY,
-    title text,
-    artist text,
-    album text,
-    genre text,
-    duration text,
-    release_year int,
-    cover_image text,
-    popularity int,
-    created_at timestamp DEFAULT toTimestamp(now())
+id uuid PRIMARY KEY,
+title text,
+artist text,
+album text,
+genre text,
+duration text,
+release_year int,
+cover_image text,
+popularity int,
+created_at timestamp DEFAULT toTimestamp(now())
 );
 
--- Create indices for common queries
+-- Índices para consultas frecuentes
 CREATE INDEX IF NOT EXISTS ON songs (artist);
 CREATE INDEX IF NOT EXISTS ON songs (genre);
 CREATE INDEX IF NOT EXISTS ON songs (popularity);
 
--- User preferences table (for genre preferences)
+-- Tabla de preferencias de usuario (géneros musicales)
 CREATE TABLE IF NOT EXISTS user_preferences (
-    user_id uuid,
-    genre text,
-    PRIMARY KEY (user_id, genre)
+user_id uuid,
+genre text,
+PRIMARY KEY (user_id, genre)
 );
 
--- User favorites table
+-- Tabla de favoritos de usuarios
 CREATE TABLE IF NOT EXISTS favorites (
-    user_id uuid,
-    song_id uuid,
-    added_at timestamp DEFAULT toTimestamp(now()),
-    PRIMARY KEY (user_id, song_id)
+user_id uuid,
+song_id uuid,
+added_at timestamp DEFAULT toTimestamp(now()),
+PRIMARY KEY (user_id, song_id)
 );
 
--- User listening history
+-- Historial de escucha de usuarios
 CREATE TABLE IF NOT EXISTS listening_history (
-    user_id uuid,
-    song_id uuid,
-    listened_at timestamp,
-    PRIMARY KEY ((user_id), listened_at, song_id)
+user_id uuid,
+song_id uuid,
+listened_at timestamp,
+PRIMARY KEY ((user_id), listened_at, song_id)
 ) WITH CLUSTERING ORDER BY (listened_at DESC);
 
--- Playlists table
+-- Tabla de listas de reproducción
 CREATE TABLE IF NOT EXISTS playlists (
-    id uuid,
-    user_id uuid,
-    name text,
-    created_at timestamp DEFAULT toTimestamp(now()),
-    PRIMARY KEY (id)
+id uuid,
+user_id uuid,
+name text,
+created_at timestamp DEFAULT toTimestamp(now()),
+PRIMARY KEY (id)
 );
 
--- Playlist songs
+-- Canciones en listas de reproducción
 CREATE TABLE IF NOT EXISTS playlist_songs (
-    playlist_id uuid,
-    song_id uuid,
-    added_at timestamp DEFAULT toTimestamp(now()),
-    PRIMARY KEY (playlist_id, song_id)
+playlist_id uuid,
+song_id uuid,
+added_at timestamp DEFAULT toTimestamp(now()),
+PRIMARY KEY (playlist_id, song_id)
 );
-
--- Sample data for testing
+-- Datos de muestra para pruebas
 INSERT INTO songs (id, title, artist, album, genre, duration, release_year, cover_image, popularity)
 VALUES (uuid(), 'Blinding Lights', 'The Weeknd', 'After Hours', 'Pop', '3:20', 2020, 'https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg', 100);
 
