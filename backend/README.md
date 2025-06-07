@@ -54,3 +54,5 @@ favorites - Canciones favoritas del usuario
 listening_history - Historial de escucha del usuario
 
 playlists - Listas de reproducción del usuario
+
+## Nota: para la ejecucion debe instalar la carpeta de node modules: "npm install", y el comando para ejercutarlo es "npm run dev"
