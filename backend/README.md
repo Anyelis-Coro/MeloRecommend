@@ -1,4 +1,4 @@
-#Sistema de Recomendación Musical
+## Sistema de Recomendación Musical
 
 El backend está construido con Python 2.7, Cassandra 3.11.10 y JDK 8 para impulsar el sistema de recomendación musical.
 
@@ -55,4 +55,5 @@ listening_history - Historial de escucha del usuario
 
 playlists - Listas de reproducción del usuario
 
-## Nota: para la ejecucion debe instalar la carpeta de node modules: "npm install", y el comando para ejercutarlo es "npm run dev"
+# Nota:
+para la ejecucion debe instalar la carpeta de node modules: "npm install", y el comando para ejercutarlo es "npm run dev"
